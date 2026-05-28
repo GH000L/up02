@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-module1:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        cd module1-flask
+        pip install flask
+    - name: Check syntax
+      run: |
+        cd module1-flask
+        python -m py_compile app.py
+
+  test-module2:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - name: Install dependencies
+      run: |
+        cd module2-nodejs
+        npm install
+    - name: Check syntax
+      run: |
+        cd module2-nodejs
+        node --check worker.js
+
+  test-module3:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        cd module3-python
+        pip install flask
+    - name: Check syntax
+      run: |
+        cd module3-python
+        python -m py_compile logs.py
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [test-module1, test-module2, test-module3]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check Dockerfiles exist
+      run: |
+        ls -la Dockerfile.*
+    - name: Test docker build (module1)
+      run: docker build -f Dockerfile.module1 -t module1-test .
+    - name: Test docker build (module2)
+      run: docker build -f Dockerfile.module2 -t module2-test .
+    - name: Test docker build (module3)
+      run: docker build -f Dockerfile.module3 -t module3-test .
