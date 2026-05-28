@@ -1,0 +1,5 @@
+flask
+requests
+loguru
+sqlalchemy
+psycopg2-binary

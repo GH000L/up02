@@ -1,0 +1,49 @@
+@startuml
+title Диаграмма последовательности - Отправка с компенсацией
+
+actor "Внешняя система" as Client
+participant "API\n(5001)" as API
+participant "Worker\n(5002)" as Worker
+participant "Логи\n(5003)" as Logs
+participant "БД\n(5004)" as DB
+
+Client -> API: POST /notify
+activate API
+
+API -> API: Валидация данных
+
+alt Данные корректны
+    API -> DB: Сохранить уведомление
+    activate DB
+    DB --> API: OK
+    deactivate DB
+    
+    API -> Worker: Поставить в очередь
+    activate Worker
+    Worker --> API: OK
+    
+    API --> Client: 200 OK (принято)
+    deactivate API
+    
+    Worker -> Worker: Обработка
+    
+    alt Отправка успешна
+        Worker -> Logs: Записать успех
+        Worker --> Client: (async) Уведомление отправлено
+    else Ошибка отправки (3 попытки)
+        loop Retry (max 3)
+            Worker -> Worker: Повторная попытка
+        end
+        Worker -> Logs: Записать ошибку
+        Worker -> DB: Компенсация (отмена)
+        note right: Откат изменений в БД
+        Worker --> Client: (async) Ошибка отправки
+    end
+    
+else Данные некорректны
+    API -> Logs: Записать ошибку
+    API --> Client: 400 Bad Request
+    deactivate API
+end
+
+@enduml

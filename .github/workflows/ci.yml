@@ -72,3 +72,21 @@ jobs:
       run: docker build -f Dockerfile.module2 -t module2-test .
     - name: Test docker build (module3)
       run: docker build -f Dockerfile.module3 -t module3-test .
+
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: [test-module1, test-module2, test-module3]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Run Unit Tests
+      run: |
+        cd tests/unit
+        python -m unittest test_adapters.py -v
+    - name: Run Integration Tests
+      run: |
+        cd tests/integration
+        python -m unittest test_api_integration.py -v
