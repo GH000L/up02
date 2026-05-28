@@ -1,0 +1,21 @@
+2026-05-28 16:03:11 | INFO | ==================================================
+2026-05-28 16:03:11 | INFO | Начало интеграции: отправка уведомления
+2026-05-28 16:03:11 | INFO | Шаг 1: Вызов Notification API (порт 5001)
+2026-05-28 16:03:11 | INFO | Вызов notification_api: POST http://localhost:5001/notify
+2026-05-28 16:03:11 | DEBUG | Данные: {'channel': 'email', 'to': 'test@integration.com', 'template': 'orchestrator_test', 'data': {'name': 'Тестовый пользователь', 'message': 'Это уведомление отправлено через оркестратор'}}
+2026-05-28 16:03:13 | INFO | Ответ notification_api: статус 200
+2026-05-28 16:03:13 | SUCCESS | Уведомление принято, ID: 5c57b5fe-85e8-4fda-b155-8de29f2bde6a
+2026-05-28 16:03:13 | INFO | Шаг 2: Вызов Worker для обработки (порт 5002)
+2026-05-28 16:03:13 | INFO | Вызов worker: POST http://localhost:5002/task
+2026-05-28 16:03:13 | DEBUG | Данные: {'id': '5c57b5fe-85e8-4fda-b155-8de29f2bde6a', 'channel': 'email', 'to': 'test@integration.com', 'template': 'orchestrator_test', 'data': {'name': 'Тестовый пользователь', 'message': 'Это уведомление отправлено через оркестратор'}}
+2026-05-28 16:03:13 | INFO | Ответ worker: статус 200
+2026-05-28 16:03:13 | INFO | Вызов worker: GET http://localhost:5002/process
+2026-05-28 16:03:13 | INFO | Ответ worker: статус 200
+2026-05-28 16:03:13 | SUCCESS | Worker обработал задачу: {'task_id': '5c57b5fe-85e8-4fda-b155-8de29f2bde6a', 'processed': True, 'success': True}
+2026-05-28 16:03:13 | INFO | Шаг 3: Запись в логи (порт 5003)
+2026-05-28 16:03:13 | INFO | Вызов logs_api: POST http://localhost:5003/log
+2026-05-28 16:03:13 | DEBUG | Данные: {'notification_id': '5c57b5fe-85e8-4fda-b155-8de29f2bde6a', 'channel': 'email', 'status': 'processed_by_orchestrator', 'sent_at': '2026-05-28T16:03:13.957826', 'error': ''}
+2026-05-28 16:03:15 | INFO | Ответ logs_api: статус 200
+2026-05-28 16:03:15 | SUCCESS | Статус записан в логи
+2026-05-28 16:03:15 | SUCCESS | Интеграция завершена для ID: 5c57b5fe-85e8-4fda-b155-8de29f2bde6a
+2026-05-28 16:03:15 | INFO | ==================================================
